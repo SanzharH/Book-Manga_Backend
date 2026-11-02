@@ -2,24 +2,29 @@
 
 namespace Database\Seeders;
 
-use App\Models\User;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
+use App\Models\Category;
+use App\Models\Product;
+use App\Models\Tag;
 use Illuminate\Database\Seeder;
 
 class DatabaseSeeder extends Seeder
 {
-    use WithoutModelEvents;
-
-    /**
-     * Seed the application's database.
-     */
     public function run(): void
     {
-        // User::factory(10)->create();
+        $categories = Category::factory()->count(5)->create();
+        $tags = Tag::factory()->count(8)->create();
 
-        User::factory()->create([
-            'name' => 'Test User',
-            'email' => 'test@example.com',
-        ]);
+        $products = Product::factory()
+            ->count(20)
+            ->recycle($categories)
+            ->create();
+
+  foreach ($products as $product) {
+    $tagCount = fake()->numberBetween(1, 3);
+
+    $product->tags()->sync(
+        $tags->random($tagCount)->modelKeys()
+    );
+}
     }
 }
