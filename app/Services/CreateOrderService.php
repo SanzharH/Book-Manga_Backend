@@ -6,7 +6,7 @@ use App\Models\Order;
 use App\Models\Product;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Validation\ValidationException;
+use App\Exceptions\BusinessException;
 
 class CreateOrderService
 {
@@ -32,15 +32,15 @@ class CreateOrderService
                 $quantity = $item['quantity'];
 
                 if (! $product->is_published) {
-                    throw ValidationException::withMessages([
-                        'items' => ["Товар «{$product->title}» недоступен."],
-                    ]);
+                throw new BusinessException(
+                "Товар «{$product->title}» недоступен.",
+                );
                 }
 
-                if ($product->stock < $quantity) {
-                    throw ValidationException::withMessages([
-                        'items' => ["Недостаточно товара «{$product->title}» на складе."],
-                    ]);
+            if ($product->stock < $quantity) {
+                throw new BusinessException(
+                    "Недостаточно товара «{$product->title}» на складе.",
+                );
                 }
 
                 $product->decrement('stock', $quantity);

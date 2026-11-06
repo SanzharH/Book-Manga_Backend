@@ -1,5 +1,6 @@
 <?php
 
+use App\Exceptions\BusinessException;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -13,13 +14,29 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-    $middleware->alias([
-        'role' => \App\Http\Middleware\EnsureRole::class,
-    ]);
-    $middleware->redirectGuestsTo(null);
-})
+        $middleware->alias([
+            'role' => \App\Http\Middleware\EnsureRole::class,
+        ]);
+
+        $middleware->redirectGuestsTo(null);
+    })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->shouldRenderJsonWhen(
             fn (Request $request) => $request->is('api/*') || $request->expectsJson(),
         );
-    })->create();
+
+        $exceptions->render(function (
+            BusinessException $exception,
+            Request $request,
+        ) {
+            if (! $request->is('api/*')) {
+                return null;
+            }
+
+            return response()->json([
+                'message' => $exception->getMessage(),
+                'error' => 'business_rule_violation',
+            ], $exception->statusCode);
+        });
+    })
+    ->create();
