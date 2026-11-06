@@ -8,6 +8,7 @@ use App\Http\Controllers\Api\ProductController;
 use App\Http\Controllers\Api\Admin\CategoryController as AdminCategoryController;
 use App\Http\Controllers\Api\Admin\ProductController as AdminProductController;
 use App\Http\Controllers\Api\OrderController;
+use App\Http\Controllers\Api\ReviewController;
 
 Route::get('/products', [ProductController::class, 'index']);
 Route::get('/products/{product}', [ProductController::class, 'show']);
@@ -54,5 +55,9 @@ Route::middleware(['auth:sanctum', 'role:admin'])
         ->only(['index', 'store', 'show']);
 });
 
+Route::get('/products/{product}/reviews', [ReviewController::class, 'index']);
+
+Route::post('/products/{product}/reviews', [ReviewController::class, 'store'])
+    ->middleware('auth:sanctum');
     
   
