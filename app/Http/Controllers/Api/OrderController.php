@@ -6,11 +6,9 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreOrderRequest;
 use App\Http\Resources\OrderResource;
 use App\Models\Order;
-use App\Models\Product;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Validation\ValidationException;
+use App\Services\CreateOrderService;
 
 class OrderController extends Controller
 {
@@ -25,58 +23,19 @@ class OrderController extends Controller
         return OrderResource::collection($orders);
     }
 
-    public function store(StoreOrderRequest $request): JsonResponse
-    {
-        $data = $request->validated();
-        $items = collect($data['items'])->sortBy('product_id');
+    public function store(
+    StoreOrderRequest $request,
+    CreateOrderService $createOrder,
+): JsonResponse {
+    $order = $createOrder->handle(
+        $request->user(),
+        $request->validated(),
+    );
 
-        $order = DB::transaction(function () use ($request, $data, $items): Order {
-            $order = new Order([
-                'shipping_name' => $data['shipping_name'],
-                'shipping_address' => $data['shipping_address'],
-            ]);
-
-            $order->user()->associate($request->user());
-            $order->save();
-
-            foreach ($items as $item) {
-                $product = Product::query()
-                    ->whereKey($item['product_id'])
-                    ->lockForUpdate()
-                    ->firstOrFail();
-
-                $quantity = $item['quantity'];
-
-                if (! $product->is_published) {
-                    throw ValidationException::withMessages([
-                        'items' => ["Товар «{$product->title}» недоступен."],
-                    ]);
-                }
-
-                if ($product->stock < $quantity) {
-                    throw ValidationException::withMessages([
-                        'items' => ["Недостаточно товара «{$product->title}» на складе."],
-                    ]);
-                }
-
-                $product->decrement('stock', $quantity);
-
-                $order->items()->create([
-                    'product_id' => $product->id,
-                    'quantity' => $quantity,
-                    'unit_price' => $product->price,
-                ]);
-            }
-
-            return $order;
-        });
-
-        $order->load('items.product');
-
-        return (new OrderResource($order))
-            ->response()
-            ->setStatusCode(201);
-    }
+    return (new OrderResource($order))
+        ->response()
+        ->setStatusCode(201);
+}
 
     public function show(Request $request, Order $order): OrderResource
     {
