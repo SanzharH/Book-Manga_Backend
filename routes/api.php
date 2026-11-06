@@ -1,17 +1,14 @@
 <?php
 
+use App\Http\Controllers\Api\Admin\CategoryController as AdminCategoryController;
+use App\Http\Controllers\Api\Admin\ProductController as AdminProductController;
+use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\OrderController;
+use App\Http\Controllers\Api\ProductController;
+use App\Http\Controllers\Api\ReviewController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\Api\AuthController;
-use App\Http\Controllers\Api\ProductController;
-use App\Http\Controllers\Api\Admin\CategoryController as AdminCategoryController;
-use App\Http\Controllers\Api\Admin\ProductController as AdminProductController;
-use App\Http\Controllers\Api\OrderController;
-use App\Http\Controllers\Api\ReviewController;
-
-Route::get('/products', [ProductController::class, 'index']);
-Route::get('/products/{product}', [ProductController::class, 'show']);
 
 Route::get('/health', function () {
     try {
@@ -43,6 +40,13 @@ Route::prefix('auth')
         Route::post('/logout', 'logout')->middleware('auth:sanctum');
     });
 
+Route::get('/products', [ProductController::class, 'index']);
+Route::get('/products/{product}', [ProductController::class, 'show']);
+
+Route::get('/products/{product}/reviews', [ReviewController::class, 'index']);
+Route::post('/products/{product}/reviews', [ReviewController::class, 'store'])
+    ->middleware('auth:sanctum');
+
 Route::middleware(['auth:sanctum', 'role:admin'])
     ->prefix('admin')
     ->group(function (): void {
@@ -50,14 +54,9 @@ Route::middleware(['auth:sanctum', 'role:admin'])
         Route::apiResource('products', AdminProductController::class);
     });
 
-    Route::middleware('auth:sanctum')->group(function (): void {
+Route::middleware('auth:sanctum')->group(function (): void {
     Route::apiResource('orders', OrderController::class)
-        ->only(['index', 'store', 'show']);
+        ->only(['index', 'store', 'show', 'update']);
 });
-
-Route::get('/products/{product}/reviews', [ReviewController::class, 'index']);
-
-Route::post('/products/{product}/reviews', [ReviewController::class, 'store'])
-    ->middleware('auth:sanctum');
     
   

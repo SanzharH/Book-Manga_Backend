@@ -9,19 +9,25 @@ use App\Models\Order;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use App\Services\CreateOrderService;
+use Illuminate\Support\Facades\Gate;
+use App\Http\Requests\UpdateOrderRequest;
 
 class OrderController extends Controller
 {
     public function index(Request $request)
-    {
-        $orders = Order::query()
-            ->where('user_id', $request->user()->getKey())
-            ->with('items.product')
-            ->latest()
-            ->paginate(15);
+{
+    Gate::authorize('viewAny', Order::class);
 
-        return OrderResource::collection($orders);
+    $query = Order::query()
+        ->with('items.product')
+        ->latest();
+
+    if ($request->user()->role !== 'admin') {
+        $query->where('user_id', $request->user()->getKey());
     }
+
+    return OrderResource::collection($query->paginate(15));
+}
 
     public function store(
     StoreOrderRequest $request,
@@ -38,13 +44,21 @@ class OrderController extends Controller
 }
 
     public function show(Request $request, Order $order): OrderResource
-    {
-        abort_unless(
-            (int) $order->user_id === (int) $request->user()->getKey(),
-            404,
-        );
+{
+    Gate::authorize('view', $order);
 
-        $order->refresh()->load('items.product');
-        return new OrderResource($order);
-    }
+    $order->load('items.product');
+
+    return new OrderResource($order);
+}
+public function update(
+    UpdateOrderRequest $request,
+    Order $order,
+): OrderResource {
+    Gate::authorize('update', $order);
+
+    $order->update($request->validated());
+
+    return new OrderResource($order->refresh()->load('items.product'));
+}
 }
