@@ -9,6 +9,7 @@ use App\Http\Controllers\Api\ReviewController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Api\Admin\OrderReportController as AdminOrderReportController;
 
 Route::get('/health', function () {
     try {
@@ -52,6 +53,7 @@ Route::middleware(['auth:sanctum', 'role:admin'])
     ->group(function (): void {
         Route::apiResource('categories', AdminCategoryController::class);
         Route::apiResource('products', AdminProductController::class);
+        Route::get('reports/orders', [AdminOrderReportController::class, 'index']);
     });
 
 Route::middleware('auth:sanctum')->group(function (): void {
