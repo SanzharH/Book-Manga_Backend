@@ -1,58 +1,151 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Book Manga Shop API
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+Backend API интернет-магазина книг и манги. Проект построен на Laravel 13, PHP 8.3+ и MySQL; аутентификация API выполняется через Laravel Sanctum Personal Access Tokens.
 
-## About Laravel
+## Требования
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+- PHP 8.3 или новее с расширениями, необходимыми Laravel и PDO MySQL.
+- Composer.
+- MySQL 8.x (или совместимая версия).
+- Git.
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+## Локальный запуск на Windows
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+Откройте PowerShell в каталоге репозитория и выполните:
 
-## Learning Laravel
-
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
-
-In addition, [Laracasts](https://laracasts.com) contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
-
-You can also watch bite-sized lessons with real-world projects on [Laravel Learn](https://laravel.com/learn), where you will be guided through building a Laravel application from scratch while learning PHP fundamentals.
-
-## Agentic Development
-
-Laravel's predictable structure and conventions make it ideal for AI coding agents like Claude Code, Cursor, and GitHub Copilot. Install [Laravel Boost](https://laravel.com/docs/ai) to supercharge your AI workflow:
-
-```bash
-composer require laravel/boost --dev
-
-php artisan boost:install
+```powershell
+composer install
+Copy-Item .env.example .env
 ```
 
-Boost provides your agent 15+ tools and skills that help agents build Laravel applications while following best practices.
+Создайте пустую базу MySQL с именем `book_manga_api` через используемый локальный сервер БД или клиент MySQL. Затем укажите в `.env` свои локальные настройки подключения:
 
-## Contributing
+```dotenv
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=book_manga_api
+DB_USERNAME=root
+DB_PASSWORD=
+```
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+Значения выше — пример для локальной разработки. Если MySQL слушает другой адрес или порт, укажите фактические значения. `.env` индивидуален для каждой машины и не должен коммититься или отправляться в репозиторий.
 
-## Code of Conduct
+Продолжите настройку и запустите сервер:
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+```powershell
+php artisan key:generate
+php artisan migrate --seed
+php artisan serve
+```
 
-## Security Vulnerabilities
+Сидирование добавляет демонстрационные категории, теги и 20 тестовых товаров. После запуска API доступен по адресу `http://127.0.0.1:8000`; проверка соединения с БД: `GET http://127.0.0.1:8000/api/health`.
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+Если миграции уже применены, достаточно запустить `php artisan serve`. Не используйте `migrate:fresh` на базе с нужными данными: эта команда удаляет и создаёт таблицы заново.
 
-## License
+## Подключение фронтенда
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+Для запросов указывайте базовый URL API, заканчивающийся на `/api`, например:
+
+```text
+http://127.0.0.1:8000/api
+```
+
+Если фронтенд запускается на другом компьютере, запустите Laravel на компьютере с API так:
+
+```powershell
+php artisan serve --host=0.0.0.0 --port=8000
+```
+
+Вместо `127.0.0.1` во фронтенде укажите LAN-IP компьютера с backend, например `http://192.168.1.25:8000/api`. Компьютеры должны находиться в доступной друг другу сети; если Windows Firewall блокирует соединение, разрешите входящие подключения к порту 8000. База данных остаётся на компьютере, где запущен backend, и фронтенду напрямую подключаться к MySQL не нужно.
+
+Для защищённых запросов передавайте токен из ответа регистрации или входа в заголовке:
+
+```http
+Authorization: Bearer <access_token>
+Accept: application/json
+Content-Type: application/json
+```
+
+`Content-Type` нужен для запросов с JSON-телом. Регистрация всегда создаёт пользователя с ролью `buyer`; публичного API для выдачи роли `admin` нет. Для проверки административных функций запросите у владельца проекта отдельную тестовую учётную запись. Не помещайте рабочие пароли и токены в исходный код, README или общий экспорт Postman.
+
+Для локальной разработки API разрешает CORS-запросы с любого origin и не использует cookie-аутентификацию (`supports_credentials=false`). API использует Bearer-токены.
+
+## Основные эндпоинты
+
+| Метод | Путь | Доступ | Назначение |
+|---|---|---|---|
+| `GET` | `/api/health` | Публичный | Проверка API и подключения к БД |
+| `POST` | `/api/auth/register` | Публичный | Регистрация покупателя |
+| `POST` | `/api/auth/login` | Публичный | Вход; возвращает Bearer-токен |
+| `POST` | `/api/auth/logout` | Токен | Отзыв текущего токена |
+| `GET` | `/api/user` | Токен | Данные текущего пользователя |
+| `GET` | `/api/products` | Публичный | Каталог с фильтрами и пагинацией |
+| `GET` | `/api/products/{product}` | Публичный | Карточка товара |
+| `GET` | `/api/products/{product}/reviews` | Публичный | Отзывы о товаре |
+| `POST` | `/api/products/{product}/reviews` | Токен | Создать отзыв; один отзыв пользователя на товар |
+| `GET` | `/api/orders` | Токен | Заказы текущего пользователя; для администратора — все заказы |
+| `POST` | `/api/orders` | Токен | Создать заказ |
+| `GET` | `/api/orders/{order}` | Токен | Получить заказ (владелец или администратор) |
+| `PUT`, `PATCH` | `/api/orders/{order}` | Токен | Изменить имя/адрес доставки своего заказа, пока статус `new`; администратор также может обновить доступный заказ |
+| `GET`, `POST` | `/api/admin/categories` | Администратор | Список категорий / создать категорию |
+| `GET`, `PUT`, `PATCH`, `DELETE` | `/api/admin/categories/{category}` | Администратор | Просмотр, изменение и удаление категории |
+| `GET`, `POST` | `/api/admin/products` | Администратор | Список товаров / создать товар |
+| `GET`, `PUT`, `PATCH`, `DELETE` | `/api/admin/products/{product}` | Администратор | Просмотр, изменение и удаление товара |
+| `GET` | `/api/admin/reports/orders` | Администратор | Сводный отчёт по заказам и продажам |
+
+Все пути в таблице указаны относительно базового URL API. Например, полный адрес каталога: `http://127.0.0.1:8000/api/products`.
+
+### Фильтры каталога
+
+`GET /api/products` поддерживает параметры:
+
+- `search` — поиск по названию и автору;
+- `category_id` — идентификатор категории;
+- `format` — `book` или `manga`;
+- `min_price`, `max_price` — диапазон цены;
+- `in_stock` — фильтр наличия (`true`/`false`);
+- `sort` — `title`, `price` или `created_at`;
+- `direction` — `asc` или `desc`;
+- `per_page` — размер страницы от 1 до 100 (по умолчанию Laravel).
+
+Пример: `GET /api/products?format=manga&min_price=100&in_stock=true&sort=price&direction=asc&per_page=12`.
+
+### Создание заказа
+
+Передавайте идентификаторы товаров и количество. Цены берутся backend из каталога, поэтому фронтенд не должен отправлять цену:
+
+```json
+{
+  "shipping_name": "Имя получателя",
+  "shipping_address": "Адрес доставки",
+  "items": [
+    { "product_id": 1, "quantity": 2 }
+  ]
+}
+```
+
+Идентификаторы товаров в одном заказе должны быть уникальны; количество для одной позиции — от 1 до 99. Нехватка товара на складе возвращается как ошибка конфликта, заказ и остатки не должны частично измениться.
+
+### Формат ответов и ошибки
+
+Успешные ответы ресурсов обычно находятся в поле `data`; списки содержат стандартные `links` и `meta` пагинации Laravel. Основные коды ответа:
+
+- `200` — успешно;
+- `201` — ресурс создан;
+- `204` — успешно удалён, тело ответа пустое;
+- `401` — отсутствует или недействителен токен;
+- `403` — нет прав для действия;
+- `404` — ресурс не найден или недоступен;
+- `409` — конфликт бизнес-правила, например недостаточный остаток;
+- `422` — ошибки валидации; подробности возвращаются в `errors`.
+
+## Postman
+
+Владелец проекта передаст Postman-коллекцию отдельно. В ней переменная `base_url` должна указывать на адрес backend без суффикса `/api` (например, `http://127.0.0.1:8000`), так как пути запросов уже содержат `/api`. Токен администратора хранится в локальном окружении Postman в переменной `token`; не экспортируйте значения окружения вместе с коллекцией.
+
+## Примечания
+
+- Для описания поведения endpoint-ов см. таблицу выше и Postman-коллекцию.
+- `php artisan route:list --path=api` выводит зарегистрированные API-маршруты.
+- `.env` содержит локальные секреты и исключён из передачи; используйте `.env.example` как шаблон.
