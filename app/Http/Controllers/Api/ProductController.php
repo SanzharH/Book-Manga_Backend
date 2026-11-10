@@ -15,13 +15,17 @@ class ProductController extends Controller
 
         $query = Product::query()
             ->with(['category', 'tags'])
+            ->withAvg('reviews', 'rating')
+            ->withCount('reviews')
             ->where('is_published', true);
 
         if (! empty($filters['search'])) {
-            $query->whereFullText(
-                ['title', 'author'],
-                $filters['search']
-            );
+        $search = $filters['search'];
+
+        $query->where(function ($query) use ($search): void {
+        $query->where('title', 'like', "%{$search}%")
+            ->orWhere('author', 'like', "%{$search}%");
+        });
         }
 
         if (isset($filters['category_id'])) {
@@ -48,10 +52,17 @@ class ProductController extends Controller
             );
         }
 
-        $query->orderBy(
-            $filters['sort'] ?? 'created_at',
-            $filters['direction'] ?? 'desc'
-        );
+        $sort = $filters['sort'] ?? 'created_at';
+        $direction = $filters['direction'] ?? 'desc';
+
+        if ($sort === 'rating') {
+            $query->orderByRaw('reviews_avg_rating IS NULL ASC')
+            ->orderBy('reviews_avg_rating', $direction);
+        } elseif ($sort === 'popular') {
+            $query->orderBy('reviews_count', $direction);
+        } else {
+            $query->orderBy($sort, $direction);
+        }
 
         return ProductResource::collection(
             $query->paginate($filters['per_page'] ?? 15)
@@ -63,6 +74,8 @@ class ProductController extends Controller
         abort_unless($product->is_published, 404);
 
         $product->load(['category', 'tags']);
+        $product->loadAvg('reviews', 'rating')
+        ->loadCount('reviews');
 
         return new ProductResource($product);
     }

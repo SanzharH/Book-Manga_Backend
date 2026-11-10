@@ -21,7 +21,7 @@ class ProductFilterRequest extends FormRequest
             'min_price' => ['sometimes', 'numeric', 'min:0'],
             'max_price' => ['sometimes', 'numeric', 'min:0'],
             'in_stock' => ['sometimes', 'boolean'],
-            'sort' => ['sometimes', 'in:title,price,created_at'],
+            'sort' => ['sometimes', 'in:title,price,created_at,rating,popular'],
             'direction' => ['sometimes', 'in:asc,desc'],
             'per_page' => ['sometimes', 'integer', 'min:1', 'max:100'],
         ];
