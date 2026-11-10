@@ -12,11 +12,11 @@ class OrderFactory extends Factory
         return [
             'user_id' => User::factory(),
             'status' => fake()->randomElement([
-                'new',
-                'confirmed',
-                'shipped',
-                'completed',
-                'cancelled',
+            'new',
+            'paid',
+            'shipped',
+            'delivered',
+            'cancelled',
             ]),
             'shipping_name' => fake()->name(),
             'shipping_address' => fake()->address(),
