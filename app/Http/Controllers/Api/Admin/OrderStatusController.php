@@ -6,17 +6,20 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\UpdateOrderStatusRequest;
 use App\Http\Resources\OrderResource;
 use App\Models\Order;
+use App\Services\UpdateOrderStatusService;
 
 class OrderStatusController extends Controller
 {
     public function update(
-        UpdateOrderStatusRequest $request,
-        Order $order,
+    UpdateOrderStatusRequest $request,
+    Order $order,
+    UpdateOrderStatusService $updateOrderStatus,
     ): OrderResource {
-        $order->update($request->validated());
+    $updatedOrder = $updateOrderStatus->handle(
+        $order,
+        $request->validated('status'),
+    );
 
-        return new OrderResource(
-            $order->refresh()->load('items.product')
-        );
+    return new OrderResource($updatedOrder);
     }
 }
