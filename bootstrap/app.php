@@ -17,6 +17,9 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'role' => \App\Http\Middleware\EnsureRole::class,
         ]);
+        $middleware->appendToGroup('api', [
+        \App\Http\Middleware\LogApiRequest::class,
+        ]);
 
         $middleware->redirectGuestsTo(null);
     })

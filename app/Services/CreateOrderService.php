@@ -2,11 +2,12 @@
 
 namespace App\Services;
 
+use App\Exceptions\BusinessException;
 use App\Models\Order;
 use App\Models\Product;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
-use App\Exceptions\BusinessException;
+use Illuminate\Support\Facades\Log;
 
 class CreateOrderService
 {
@@ -32,21 +33,33 @@ class CreateOrderService
                 $quantity = $item['quantity'];
 
                 if (! $product->is_published) {
-                throw new BusinessException(
-                "Товар «{$product->title}» недоступен.",
-                );
+                    Log::warning('Order creation rejected: product is unpublished', [
+                        'user_id' => $user->getKey(),
+                        'product_id' => $product->getKey(),
+                    ]);
+
+                    throw new BusinessException(
+                        "Товар «{$product->title}» недоступен."
+                    );
                 }
 
-            if ($product->stock < $quantity) {
-                throw new BusinessException(
-                    "Недостаточно товара «{$product->title}» на складе.",
-                );
+                if ($product->stock < $quantity) {
+                    Log::warning('Order creation rejected: insufficient stock', [
+                        'user_id' => $user->getKey(),
+                        'product_id' => $product->getKey(),
+                        'requested_quantity' => $quantity,
+                        'available_stock' => $product->stock,
+                    ]);
+
+                    throw new BusinessException(
+                        "Недостаточно товара «{$product->title}» на складе."
+                    );
                 }
 
                 $product->decrement('stock', $quantity);
 
                 $order->items()->create([
-                    'product_id' => $product->id,
+                    'product_id' => $product->getKey(),
                     'quantity' => $quantity,
                     'unit_price' => $product->price,
                 ]);
@@ -55,6 +68,15 @@ class CreateOrderService
             return $order;
         });
 
-        return $order->refresh()->load('items.product');
+        $order = $order->refresh()->load('items.product');
+
+        Log::info('Order created', [
+            'order_id' => $order->getKey(),
+            'user_id' => $user->getKey(),
+            'items_count' => $order->items->count(),
+            'total_quantity' => (int) $order->items->sum('quantity'),
+        ]);
+
+        return $order;
     }
 }
