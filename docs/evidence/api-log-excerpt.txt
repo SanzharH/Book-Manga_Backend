@@ -1,0 +1,36 @@
+PS C:\Users\hosma\OneDrive\Desktop\КурсачБэк> Select-String -Path storage/logs/laravel.log -Pattern 'API request completed|Order created|Order status changed' |
+>>     Select-Object -Last 10
+
+storage\logs\laravel.log:1489:[2026-11-11 16:36:24] testing.INFO: API request completed 
+{"method":"GET","url":"/api/categories","user_id":null,"status_code":200,"duration_ms":1.24} 
+storage\logs\laravel.log:1490:[2026-11-11 16:36:24] testing.INFO: API request completed 
+{"method":"GET","url":"/api/products","user_id":null,"status_code":200,"duration_ms":4.47} 
+storage\logs\laravel.log:1491:[2026-11-11 16:36:24] testing.INFO: API request completed 
+{"method":"GET","url":"/api/products","user_id":null,"status_code":200,"duration_ms":3.26} 
+storage\logs\laravel.log:1492:[2026-11-11 16:36:24] testing.INFO: API request completed 
+{"method":"GET","url":"/api/products","user_id":null,"status_code":200,"duration_ms":7.21} 
+storage\logs\laravel.log:1493:[2026-11-11 16:36:24] testing.INFO: API request completed 
+{"method":"GET","url":"/api/products","user_id":null,"status_code":200,"duration_ms":3.45} 
+storage\logs\laravel.log:1494:[2026-11-11 16:36:24] testing.INFO: API request completed 
+{"method":"GET","url":"/api/products","user_id":null,"status_code":200,"duration_ms":2.08} 
+storage\logs\laravel.log:1495:[2026-11-11 16:36:24] testing.INFO: API request completed 
+{"method":"GET","url":"/api/products/1/reviews","user_id":null,"status_code":200,"duration_ms":1.82} 
+storage\logs\laravel.log:1496:[2026-11-11 16:36:24] testing.INFO: API request completed 
+{"method":"POST","url":"/api/products/1/reviews","user_id":1,"status_code":201,"duration_ms":2.7} 
+storage\logs\laravel.log:1497:[2026-11-11 16:36:24] testing.INFO: API request completed 
+{"method":"POST","url":"/api/products/1/reviews","user_id":1,"status_code":422,"duration_ms":1.07} 
+storage\logs\laravel.log:1498:[2026-11-11 16:36:24] testing.INFO: API request completed 
+{"method":"POST","url":"/api/products/1/reviews","user_id":1,"status_code":422,"duration_ms":1.26} 
+
+
+PS C:\Users\hosma\OneDrive\Desktop\КурсачБэк> Select-String -Path storage/logs/laravel.log -Pattern 'local\.INFO: Order created|local\.INFO: Order status changed' |
+>>     Select-Object -Last 5
+
+storage\logs\laravel.log:1281:[2026-11-11 13:54:36] local.INFO: Order created {"order_id":11,"user_id":4,"items_count":1,"total_quantity":2} 
+storage\logs\laravel.log:1283:[2026-11-11 13:54:54] local.INFO: Order status changed 
+{"order_id":11,"from_status":"new","to_status":"cancelled","stock_restored_units":2} 
+storage\logs\laravel.log:1401:[2026-11-11 15:01:29] local.INFO: Order status changed 
+{"order_id":3,"from_status":"new","to_status":"paid","stock_restored_units":0} 
+
+
+PS C:\Users\hosma\OneDrive\Desktop\КурсачБэк> 
