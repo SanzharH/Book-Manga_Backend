@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\Admin\OrderReportController as AdminOrderReportController;
 use App\Http\Controllers\Api\CategoryController;
 use App\Http\Controllers\Api\Admin\OrderStatusController as AdminOrderStatusController;
+use App\Http\Controllers\Api\AiRecommendationController;
 
 Route::get('/health', function () {
     try {
@@ -68,5 +69,8 @@ Route::middleware('auth:sanctum')->group(function (): void {
 });
 
 Route::get('/categories', [CategoryController::class, 'index']);
+
+Route::post('/ai/recommendations', AiRecommendationController::class)
+    ->middleware(['auth:sanctum', 'throttle:5,1']);
     
   
