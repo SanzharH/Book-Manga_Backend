@@ -26,5 +26,12 @@ class DatabaseSeeder extends Seeder
         $tags->random($tagCount)->modelKeys()
     );
 }
+$this->call([
+    TatsukiFujimotoCatalogSeeder::class,
+    PopularMangaCatalogSeeder::class,
+    PopularBooksCatalogSeeder::class,
+    DemoUsersSeeder::class,
+    DemoReviewsSeeder::class,
+]);
     }
 }
