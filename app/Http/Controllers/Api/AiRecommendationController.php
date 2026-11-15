@@ -4,12 +4,13 @@ namespace App\Http\Controllers\Api;
 
 use App\Exceptions\AiServiceException;
 use App\Http\Controllers\Controller;
-use App\Http\Requests\Ai\RecommendProductsRequest;
+use App\Http\Requests\AI\RecommendProductsRequest;
 use App\Http\Resources\ProductResource;
 use App\Models\Product;
 use App\Models\User;
 use App\Services\AiRecommendationService;
 use Illuminate\Http\JsonResponse;
+
 
 class AiRecommendationController extends Controller
 {
