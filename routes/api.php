@@ -1,8 +1,13 @@
 <?php
 
 use App\Http\Controllers\Api\Admin\CategoryController as AdminCategoryController;
+use App\Http\Controllers\Api\Admin\OrderReportController as AdminOrderReportController;
+use App\Http\Controllers\Api\Admin\OrderStatusController as AdminOrderStatusController;
 use App\Http\Controllers\Api\Admin\ProductController as AdminProductController;
+use App\Http\Controllers\Api\AiRecommendationController;
 use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\CategoryController;
+use App\Http\Controllers\Api\FavoriteController;
 use App\Http\Controllers\Api\OrderController;
 use App\Http\Controllers\Api\ProductController;
 use App\Http\Controllers\Api\ReviewController;
@@ -10,10 +15,6 @@ use App\Http\Resources\UserResource;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\Api\Admin\OrderReportController as AdminOrderReportController;
-use App\Http\Controllers\Api\CategoryController;
-use App\Http\Controllers\Api\Admin\OrderStatusController as AdminOrderStatusController;
-use App\Http\Controllers\Api\AiRecommendationController;
 
 Route::get('/health', function () {
     try {
@@ -24,7 +25,7 @@ Route::get('/health', function () {
             'time' => now()->toIso8601String(),
             'database' => 'connected',
         ]);
-    } catch (\Throwable $exception) {
+    } catch (Throwable $exception) {
         return response()->json([
             'application' => config('app.name'),
             'time' => now()->toIso8601String(),
@@ -60,19 +61,23 @@ Route::middleware(['auth:sanctum', 'role:admin'])
         Route::apiResource('products', AdminProductController::class);
         Route::get('reports/orders', [AdminOrderReportController::class, 'index']);
         Route::patch(
-        'orders/{order}/status',
-        [AdminOrderStatusController::class, 'update']
+            'orders/{order}/status',
+            [AdminOrderStatusController::class, 'update']
         )->name('orders.status.update');
     });
 
 Route::middleware('auth:sanctum')->group(function (): void {
     Route::apiResource('orders', OrderController::class)
         ->only(['index', 'store', 'show', 'update']);
+    Route::post('/orders/{order}/cancel', [OrderController::class, 'cancel']);
+
+    // Избранное — своё у каждого пользователя
+    Route::get('/favorites', [FavoriteController::class, 'index']);
+    Route::put('/favorites/{product}', [FavoriteController::class, 'store']);
+    Route::delete('/favorites/{product}', [FavoriteController::class, 'destroy']);
 });
 
 Route::get('/categories', [CategoryController::class, 'index']);
 
 Route::post('/ai/recommendations', AiRecommendationController::class)
     ->middleware(['auth:sanctum', 'throttle:5,1']);
-    
-  

@@ -14,7 +14,7 @@ class EnsureRole
 
         if (! $user || ! in_array($user->role, $roles, true)) {
             return response()->json([
-            'message' => 'Недостаточно прав.',
+                'message' => 'Недостаточно прав.',
             ], 403);
         }
 

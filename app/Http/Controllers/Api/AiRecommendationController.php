@@ -11,7 +11,6 @@ use App\Models\User;
 use App\Services\AiRecommendationService;
 use Illuminate\Http\JsonResponse;
 
-
 class AiRecommendationController extends Controller
 {
     public function __invoke(

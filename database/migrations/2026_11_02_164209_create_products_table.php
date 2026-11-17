@@ -2,8 +2,8 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
@@ -28,7 +28,7 @@ return new class extends Migration
             $table->index(['is_published', 'category_id']);
             $table->index('price');
             if (DB::connection()->getDriverName() === 'mysql') {
-            $table->fullText(['title', 'author']);
+                $table->fullText(['title', 'author']);
             }
 
             $table->timestamps();

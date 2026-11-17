@@ -20,12 +20,14 @@ class ProductController extends Controller
             ->where('is_published', true);
 
         if (! empty($filters['search'])) {
-        $search = $filters['search'];
+            // % и _ в запросе ищутся как обычные символы, а не как шаблоны LIKE.
+            // Символ экранирования «!» одинаково работает в MySQL и SQLite.
+            $pattern = '%'.str_replace(['!', '%', '_'], ['!!', '!%', '!_'], $filters['search']).'%';
 
-        $query->where(function ($query) use ($search): void {
-        $query->where('title', 'like', "%{$search}%")
-            ->orWhere('author', 'like', "%{$search}%");
-        });
+            $query->where(function ($query) use ($pattern): void {
+                $query->whereRaw("title LIKE ? ESCAPE '!'", [$pattern])
+                    ->orWhereRaw("author LIKE ? ESCAPE '!'", [$pattern]);
+            });
         }
 
         if (isset($filters['category_id'])) {
@@ -57,7 +59,7 @@ class ProductController extends Controller
 
         if ($sort === 'rating') {
             $query->orderByRaw('reviews_avg_rating IS NULL ASC')
-            ->orderBy('reviews_avg_rating', $direction);
+                ->orderBy('reviews_avg_rating', $direction);
         } elseif ($sort === 'popular') {
             $query->orderBy('reviews_count', $direction);
         } else {
@@ -75,7 +77,7 @@ class ProductController extends Controller
 
         $product->load(['category', 'tags']);
         $product->loadAvg('reviews', 'rating')
-        ->loadCount('reviews');
+            ->loadCount('reviews');
 
         return new ProductResource($product);
     }

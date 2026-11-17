@@ -3,17 +3,16 @@
 namespace App\Http\Controllers\Api\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Admin\StoreProductRequest;
+use App\Http\Requests\Admin\UpdateProductRequest;
 use App\Http\Resources\ProductResource;
-use App\Models\OrderItem;
 use App\Models\Product;
-use App\Models\Review;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
-use Illuminate\Validation\Rule;
+use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 
 class ProductController extends Controller
 {
-    public function index()
+    public function index(): AnonymousResourceCollection
     {
         return ProductResource::collection(
             Product::query()
@@ -21,26 +20,14 @@ class ProductController extends Controller
                 ->withAvg('reviews', 'rating')
                 ->withCount('reviews')
                 ->orderByDesc('created_at')
+                ->orderByDesc('id')
                 ->paginate(15)
         );
     }
 
-    public function store(Request $request): JsonResponse
+    public function store(StoreProductRequest $request): JsonResponse
     {
-        $data = $request->validate([
-            'category_id' => ['required', 'integer', 'exists:categories,id'],
-            'sku' => ['required', 'string', 'max:64', 'unique:products,sku'],
-            'title' => ['required', 'string', 'max:255'],
-            'author' => ['required', 'string', 'max:255'],
-            'format' => ['required', Rule::in(['book', 'manga'])],
-            'description' => ['nullable', 'string'],
-            'price' => ['required', 'numeric', 'min:0.01', 'max:99999999.99'],
-            'stock' => ['sometimes', 'integer', 'min:0'],
-            'image_path' => ['nullable', 'string', 'max:255'],
-            'is_published' => ['sometimes', 'boolean'],
-        ]);
-
-        $product = Product::create($data)->load(['category', 'tags']);
+        $product = Product::create($request->validated())->load(['category', 'tags']);
 
         return (new ProductResource($product))
             ->response()
@@ -52,42 +39,19 @@ class ProductController extends Controller
         return new ProductResource($product->load(['category', 'tags']));
     }
 
-    public function update(Request $request, Product $product): ProductResource
+    public function update(UpdateProductRequest $request, Product $product): ProductResource
     {
-        $data = $request->validate([
-            'category_id' => ['sometimes', 'required', 'integer', 'exists:categories,id'],
-            'sku' => [
-                'sometimes', 'required', 'string', 'max:64',
-                Rule::unique('products', 'sku')->ignore($product->id),
-            ],
-            'title' => ['sometimes', 'required', 'string', 'max:255'],
-            'author' => ['sometimes', 'required', 'string', 'max:255'],
-            'format' => ['sometimes', 'required', Rule::in(['book', 'manga'])],
-            'description' => ['sometimes', 'nullable', 'string'],
-            'price' => ['sometimes', 'required', 'numeric', 'min:0.01', 'max:99999999.99'],
-            'stock' => ['sometimes', 'integer', 'min:0'],
-            'image_path' => ['sometimes', 'nullable', 'string', 'max:255'],
-            'is_published' => ['sometimes', 'boolean'],
-        ]);
-
-        $product->update($data);
+        $product->update($request->validated());
 
         return new ProductResource($product->refresh()->load(['category', 'tags']));
     }
 
     public function destroy(Product $product): JsonResponse
     {
-        $hasOrderItems = OrderItem::query()
-            ->where('product_id', $product->id)
-            ->exists();
-
-        $hasReviews = Review::query()
-            ->where('product_id', $product->id)
-            ->exists();
-
-        if ($hasOrderItems || $hasReviews) {
+        // Товар из заказов и отзывов не удаляем, чтобы не терять историю; его можно скрыть
+        if ($product->orderItems()->exists() || $product->reviews()->exists()) {
             return response()->json([
-                'message' => 'Нельзя удалить товар, связанный с заказом или отзывом.',
+                'message' => 'Нельзя удалить товар, связанный с заказом или отзывом. Снимите его с публикации.',
             ], 409);
         }
 

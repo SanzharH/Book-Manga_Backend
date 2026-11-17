@@ -14,26 +14,26 @@ use Illuminate\Validation\ValidationException;
 
 class AuthController extends Controller
 {
-public function register(RegisterRequest $request): JsonResponse
-{
-    $data = $request->validated();
+    public function register(RegisterRequest $request): JsonResponse
+    {
+        $data = $request->validated();
 
-    $user = User::create([
-        'name' => $data['name'],
-        'email' => $data['email'],
-        'password' => $data['password'],
-    ]);
+        $user = User::create([
+            'name' => $data['name'],
+            'email' => $data['email'],
+            'password' => $data['password'],
+        ]);
 
-    $user->refresh();
+        $user->refresh();
 
-    $token = $user->createToken('api-token')->plainTextToken;
+        $token = $user->createToken('api-token')->plainTextToken;
 
-    return response()->json([
-        'data' => new UserResource($user),
-        'token' => $token,
-        'token_type' => 'Bearer',
-    ], 201);
-}
+        return response()->json([
+            'data' => new UserResource($user),
+            'token' => $token,
+            'token_type' => 'Bearer',
+        ], 201);
+    }
 
     public function login(LoginRequest $request): JsonResponse
     {

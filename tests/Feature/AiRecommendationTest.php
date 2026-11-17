@@ -72,8 +72,7 @@ class AiRecommendationTest extends TestCase
             ->assertJsonPath('data.recommendations.0.reason', 'Подходит по жанру и формату.')
             ->assertJsonPath('meta.cached', false);
 
-        Http::assertSent(fn ($request) =>
-            str_ends_with($request->url(), 'gemini-test-model:generateContent')
+        Http::assertSent(fn ($request) => str_ends_with($request->url(), 'gemini-test-model:generateContent')
             && $request->hasHeader('x-goog-api-key', 'test-api-key')
         );
     }

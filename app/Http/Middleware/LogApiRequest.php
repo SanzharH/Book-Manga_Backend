@@ -7,8 +7,8 @@ use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\Request;
-use Illuminate\Validation\ValidationException;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Validation\ValidationException;
 use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
 use Throwable;
 
@@ -44,13 +44,13 @@ class LogApiRequest
                 'duration_ms' => round((hrtime(true) - $startedAt) / 1_000_000, 2),
             ]);
             if ($statusCode >= 500) {
-            Log::error('API request failed', [
-                'method' => $request->method(),
-                'url' => $request->getPathInfo(),
-                'user_id' => $request->user()?->getAuthIdentifier(),
-                'status_code' => $statusCode,
-                'duration_ms' => round((hrtime(true) - $startedAt) / 1_000_000, 2),
-            ]);
+                Log::error('API request failed', [
+                    'method' => $request->method(),
+                    'url' => $request->getPathInfo(),
+                    'user_id' => $request->user()?->getAuthIdentifier(),
+                    'status_code' => $statusCode,
+                    'duration_ms' => round((hrtime(true) - $startedAt) / 1_000_000, 2),
+                ]);
             }
         }
     }

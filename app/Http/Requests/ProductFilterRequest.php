@@ -11,24 +11,24 @@ class ProductFilterRequest extends FormRequest
     {
         return true;
     }
-    
+
     protected function prepareForValidation(): void
     {
-    $value = $this->input('in_stock');
+        $value = $this->input('in_stock');
 
-    if (! is_string($value)) {
-        return;
-    }
+        if (! is_string($value)) {
+            return;
+        }
 
-    $normalized = filter_var(
-        $value,
-        FILTER_VALIDATE_BOOLEAN,
-        FILTER_NULL_ON_FAILURE
-    );
+        $normalized = filter_var(
+            $value,
+            FILTER_VALIDATE_BOOLEAN,
+            FILTER_NULL_ON_FAILURE
+        );
 
-    if ($normalized !== null) {
-        $this->merge(['in_stock' => $normalized]);
-    }
+        if ($normalized !== null) {
+            $this->merge(['in_stock' => $normalized]);
+        }
     }
 
     public function rules(): array

@@ -57,7 +57,7 @@ class AiRecommendationService
             ];
         }
 
-       $catalog = $products->map(fn ($product): array => [
+        $catalog = $products->map(fn ($product): array => [
             'id' => $product->id,
             'title' => $product->title,
             'author' => $product->author,

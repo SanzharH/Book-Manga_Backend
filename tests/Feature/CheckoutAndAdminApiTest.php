@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Models\Category;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Product;
@@ -135,7 +136,7 @@ class CheckoutAndAdminApiTest extends TestCase
 
     public function test_admin_categories_respect_per_page(): void
     {
-        \App\Models\Category::factory()->count(20)->create();
+        Category::factory()->count(20)->create();
         Sanctum::actingAs(User::factory()->create(['role' => 'admin']));
 
         $this->getJson('/api/admin/categories?per_page=100')
@@ -160,9 +161,9 @@ class CheckoutAndAdminApiTest extends TestCase
 
     public function test_public_categories_list_formats_of_published_products(): void
     {
-        $shonen = \App\Models\Category::factory()->create(['name' => 'Сёнэн']);
-        $classic = \App\Models\Category::factory()->create(['name' => 'Классика']);
-        \App\Models\Category::factory()->create(['name' => 'Пустая']);
+        $shonen = Category::factory()->create(['name' => 'Сёнэн']);
+        $classic = Category::factory()->create(['name' => 'Классика']);
+        Category::factory()->create(['name' => 'Пустая']);
         Product::factory()->create(['category_id' => $shonen->id, 'format' => 'manga']);
         Product::factory()->create(['category_id' => $classic->id, 'format' => 'book']);
         Product::factory()->create(['category_id' => $classic->id, 'format' => 'manga', 'is_published' => false]);

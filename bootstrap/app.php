@@ -1,6 +1,8 @@
 <?php
 
 use App\Exceptions\BusinessException;
+use App\Http\Middleware\EnsureRole;
+use App\Http\Middleware\LogApiRequest;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -15,10 +17,10 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->alias([
-            'role' => \App\Http\Middleware\EnsureRole::class,
+            'role' => EnsureRole::class,
         ]);
         $middleware->appendToGroup('api', [
-        \App\Http\Middleware\LogApiRequest::class,
+            LogApiRequest::class,
         ]);
 
         $middleware->redirectGuestsTo(null);

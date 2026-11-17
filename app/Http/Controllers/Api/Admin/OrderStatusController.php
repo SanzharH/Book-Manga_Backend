@@ -11,15 +11,15 @@ use App\Services\UpdateOrderStatusService;
 class OrderStatusController extends Controller
 {
     public function update(
-    UpdateOrderStatusRequest $request,
-    Order $order,
-    UpdateOrderStatusService $updateOrderStatus,
+        UpdateOrderStatusRequest $request,
+        Order $order,
+        UpdateOrderStatusService $updateOrderStatus,
     ): OrderResource {
-    $updatedOrder = $updateOrderStatus->handle(
-        $order,
-        $request->validated('status'),
-    );
+        $updatedOrder = $updateOrderStatus->handle(
+            $order,
+            $request->validated('status'),
+        );
 
-    return new OrderResource($updatedOrder);
+        return new OrderResource($updatedOrder);
     }
 }
