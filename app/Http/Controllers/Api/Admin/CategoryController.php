@@ -12,10 +12,14 @@ use Illuminate\Validation\Rule;
 
 class CategoryController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
+        $perPage = $request->validate([
+            'per_page' => ['sometimes', 'integer', 'min:1', 'max:100'],
+        ])['per_page'] ?? 15;
+
         return CategoryResource::collection(
-            Category::query()->orderBy('name')->paginate(15)
+            Category::query()->orderBy('name')->paginate($perPage)
         );
     }
 

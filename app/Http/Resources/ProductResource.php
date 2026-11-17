@@ -23,6 +23,7 @@ class ProductResource extends JsonResource
             'reviews_count' => (int) ($this->reviews_count ?? 0),
             'stock' => $this->stock,
             'image_path' => $this->image_path,
+            'is_published' => (bool) $this->is_published,
             'category' => $this->whenLoaded('category', fn () => [
                 'id' => $this->category->id,
                 'name' => $this->category->name,

@@ -6,6 +6,7 @@ use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\OrderController;
 use App\Http\Controllers\Api\ProductController;
 use App\Http\Controllers\Api\ReviewController;
+use App\Http\Resources\UserResource;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Route;
@@ -33,14 +34,15 @@ Route::get('/health', function () {
 });
 
 Route::get('/user', function (Request $request) {
-    return $request->user();
+    return response()->json((new UserResource($request->user()))->resolve($request));
 })->middleware('auth:sanctum');
 
 Route::prefix('auth')
     ->controller(AuthController::class)
     ->group(function (): void {
-        Route::post('/register', 'register');
-        Route::post('/login', 'login');
+        // Ограничение частоты защищает от перебора паролей
+        Route::post('/register', 'register')->middleware('throttle:10,1');
+        Route::post('/login', 'login')->middleware('throttle:10,1');
         Route::post('/logout', 'logout')->middleware('auth:sanctum');
     });
 

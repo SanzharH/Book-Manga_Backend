@@ -21,16 +21,24 @@ class UpdateOrderRequest extends FormRequest
         return [
             'shipping_name' => ['sometimes', 'required', 'string', 'max:255'],
             'shipping_address' => ['sometimes', 'required', 'string', 'max:2000'],
+            'phone' => ['sometimes', 'nullable', 'string', 'regex:/^\+?[0-9\s\-()]{6,32}$/'],
+        ];
+    }
+
+    public function messages(): array
+    {
+        return [
+            'phone.regex' => 'Укажите телефон в формате +7 700 000 00 00.',
         ];
     }
 
     public function withValidator(Validator $validator): void
     {
         $validator->after(function (Validator $validator): void {
-            if (! $this->exists('shipping_name') && ! $this->exists('shipping_address')) {
+            if (! $this->hasAny(['shipping_name', 'shipping_address', 'phone'])) {
                 $validator->errors()->add(
                     'order',
-                    'Укажи новое имя получателя или адрес доставки.',
+                    'Укажите новое имя получателя, адрес или телефон.',
                 );
             }
         });

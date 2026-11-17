@@ -16,7 +16,12 @@ class ProductController extends Controller
     public function index()
     {
         return ProductResource::collection(
-            Product::query()->orderByDesc('created_at')->paginate(15)
+            Product::query()
+                ->with(['category', 'tags'])
+                ->withAvg('reviews', 'rating')
+                ->withCount('reviews')
+                ->orderByDesc('created_at')
+                ->paginate(15)
         );
     }
 
@@ -35,7 +40,7 @@ class ProductController extends Controller
             'is_published' => ['sometimes', 'boolean'],
         ]);
 
-        $product = Product::create($data);
+        $product = Product::create($data)->load(['category', 'tags']);
 
         return (new ProductResource($product))
             ->response()
@@ -44,7 +49,7 @@ class ProductController extends Controller
 
     public function show(Product $product): ProductResource
     {
-        return new ProductResource($product);
+        return new ProductResource($product->load(['category', 'tags']));
     }
 
     public function update(Request $request, Product $product): ProductResource
@@ -67,7 +72,7 @@ class ProductController extends Controller
 
         $product->update($data);
 
-        return new ProductResource($product->refresh());
+        return new ProductResource($product->refresh()->load(['category', 'tags']));
     }
 
     public function destroy(Product $product): JsonResponse

@@ -22,7 +22,8 @@ class OrderController extends Controller
         ->with('items.product')
         ->latest();
 
-    if ($request->user()->role !== 'admin') {
+    // Администратор видит все заказы; с ?mine=1 — только собственные (для личного кабинета)
+    if ($request->user()->role !== 'admin' || $request->boolean('mine')) {
         $query->where('user_id', $request->user()->getKey());
     }
 
